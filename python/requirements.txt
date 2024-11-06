@@ -19,3 +19,9 @@ yfinance
 tabulate
 regex
 pytz
+selenium
+webdriver_manager
+autopep8
+black
+pylint
+flake8

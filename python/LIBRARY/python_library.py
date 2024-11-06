@@ -6,6 +6,7 @@ import re
 from IPython.display import display
 from tabulate import tabulate
 import pytz
+from datetime import datetime, timedelta
 
 
 def DOWNLOAD_YAH_PRICES_BY_CODE(symbol, period="max"):
