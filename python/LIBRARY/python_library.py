@@ -5,6 +5,7 @@ import pandas as pd
 import re
 from IPython.display import display
 from tabulate import tabulate
+import pytz
 
 
 def DOWNLOAD_YAH_PRICES_BY_CODE(symbol, period="max"):
@@ -19,7 +20,7 @@ def DOWNLOAD_YAH_PRICES_BY_CODE(symbol, period="max"):
     Returns:
     DataFrame: A DataFrame containing price, dividend, and shares data merged by date.
     """
-    # symbol = 'IBM'
+    # symbol = "IBM"
     ticker = yf.Ticker(symbol)
 
     # Download historical price data
@@ -28,30 +29,36 @@ def DOWNLOAD_YAH_PRICES_BY_CODE(symbol, period="max"):
     ]
     price_data = price_data.reset_index()
     price_data = CLEAN_COLNAMES(price_data)
-    price_data["date"] = pd.to_datetime(price_data["date"])
+    price_data["date"] = pd.to_datetime(price_data["date"]).dt.date
 
     # Download dividends and shares data
-    dividend_data = ticker.dividends
-    dividend_data = dividend_data.reset_index()
-    dividend_data = CLEAN_COLNAMES(dividend_data)
-    # Get the min and max dates for the start and end
-    start_date = price_data["date"].min()
-    end_date = price_data["date"].max()
+    try:
+        dividend_data = ticker.dividends
+        dividend_data = dividend_data.reset_index()
+        dividend_data = CLEAN_COLNAMES(dividend_data)
+        dividend_data["date"] = pd.to_datetime(dividend_data["date"]).dt.date
+    except pytz.exceptions.UnknownTimeZoneError as e:
+        shares_data = pd.DataFrame(columns=["date", "dividends"])
 
-    # Ensure the dates are timezone-naive
-    start_date = start_date.tz_localize(None)
-    end_date = end_date.tz_localize(None)
+    # shares_data = ticker.get_shares_full(start=start_date, end=end_date)
+    # shares_data = pd.DataFrame(list(shares_data.items()), columns=["date", "sharesout"])
+    try:
+        # Lấy dữ liệu shares từ ticker
+        shares_data = ticker.get_shares_full()
+        # Convert shares data to DataFrame
+        shares_data = pd.DataFrame(
+            list(shares_data.items()), columns=["date", "sharesout"]
+        )
+        shares_data["date"] = pd.to_datetime(
+            shares_data["date"], errors="coerce"
+        ).dt.date
 
-    shares_data = ticker.get_shares_full(start=start_date, end=end_date)
+    except pytz.exceptions.UnknownTimeZoneError as e:
+        shares_data = pd.DataFrame(columns=["date", "sharesout"])
 
-    shares_data = pd.DataFrame(list(shares_data.items()), columns=["date", "sharesout"])
-
-    price_data["date"] = pd.to_datetime(price_data["date"]).dt.date
-    dividend_data["date"] = pd.to_datetime(dividend_data["date"]).dt.date
-    shares_data["date"] = pd.to_datetime(shares_data["date"]).dt.date
+    # shares_data["date"] = pd.to_datetime(shares_data["date"]).dt.date
 
     df_info = ticker.info
-
     final_data = pd.merge(price_data, dividend_data, on="date", how="left")
     final_data = pd.merge(final_data, shares_data, on="date", how="left")
     final_data["sharesout"] = final_data["sharesout"].ffill()
@@ -83,8 +90,27 @@ def DOWNLOAD_YAH_PRICES_BY_CODE(symbol, period="max"):
 
 
 # Usage example
-# symbol_data = DOWNLOAD_YAH_PRICES_BY_CODE("AAPL", period="max")
+# symbol_data = DOWNLOAD_YAH_PRICES_BY_CODE("IBM", period="max")
 # symbol_data = DOWNLOAD_YAH_PRICES_BY_CODE("META", period="max")
+def CACULATE_CAPI(df):
+    df = df.drop_duplicates(subset=["codesource", "date"])
+    df["rt"] = df.groupby("codesource")["rt"].transform(lambda x: x.fillna(0))
+    df["rt_1"] = 1 + df["rt"]
+    df["cumul"] = df.groupby("codesource")["rt_1"].cumprod()
+    df["cumul_rev"] = df.groupby("codesource")["cumul"].transform("last") / df["cumul"]
+    df["capi"] = df["market_cap"] * df["cumul_rev"]
+    df = df.drop(columns=["rt_1", "cumul", "cumul_rev"])
+    SHOW_DATA(df)
+    return df
+
+
+def CACULATE_RT_CHANGE(df):
+    if "close_adj" in df.columns:
+        df["rt"] = df["close_adj"] / df["close_adj"].shift(1) - 1
+        df["change"] = df["close_adj"] - df["close_adj"].shift(1)
+    else:
+        df["rt"] = df["close"] / df["close"].shift(1) - 1
+        df["change"] = df["close"] - df["close"].shift(1)
 
 
 def SHOW_DATA(df):
