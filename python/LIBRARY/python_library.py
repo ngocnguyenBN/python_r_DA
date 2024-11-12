@@ -6,7 +6,219 @@ import re
 from IPython.display import display
 from tabulate import tabulate
 import pytz
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
+import os
+
+
+def CHECK_SAVE_LOCK(
+    p_option="MAINTENANCE_STKVN > REF", p_action="SAVE", nb_seconds=3600, to_print=False
+):
+    p_result = True
+    monitor_dir = "D:/"
+    file_name = "TRAINEE_MONITOR_EXECUTION_SUMMARY.pkl"  # Converted from RDS to PKL
+
+    if p_action == "SAVE":
+        my_pc = GET_PC_NAME()
+
+        if os.path.exists(os.path.join(monitor_dir, file_name)):
+            data_old = READ_FILE(monitor_dir, file_name)
+
+            if data_old["date"].max() == pd.Timestamp("today").normalize():
+                list_option = data_old["code"].unique()
+
+                if p_option in list_option:
+                    data_old = data_old[
+                        data_old["date"] == pd.Timestamp("today").normalize()
+                    ]
+                else:
+                    new_row = pd.DataFrame(
+                        [
+                            [p_option, pd.Timestamp("today").normalize()]
+                            + [None] * (data_old.shape[1] - 2)
+                        ],
+                        columns=data_old.columns,
+                    )
+                    data_old = pd.concat([data_old, new_row], ignore_index=True)
+                    data_old = data_old[
+                        data_old["date"] == pd.Timestamp("today").normalize()
+                    ]
+            else:
+                data_old = pd.DataFrame(
+                    {"code": [p_option], "date": [pd.Timestamp("today").normalize()]}
+                )
+        else:
+            data_old = pd.DataFrame(
+                {"code": [p_option], "date": [pd.Timestamp("today").normalize()]}
+            )
+
+        if my_pc not in data_old.columns:
+            data_old[my_pc] = None
+
+        subset_data = data_old[data_old["code"] == p_option]
+
+        if pd.isna(subset_data[my_pc].iloc[0]) or (
+            subset_data[my_pc].iloc[0] != datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        ):
+            subset_data[my_pc] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            data_old.update(subset_data)
+
+        data_old = data_old.drop_duplicates(subset="code", keep="last").sort_values(
+            by="code"
+        )
+
+        data_convert = data_old.copy()
+        columns_to_convert = data_convert.columns.difference(["code", "date"])
+
+        for col in columns_to_convert:
+            data_convert[col] = data_convert[col].apply(
+                lambda x: x if pd.notna(x) else None
+            )
+            data_convert[col] = pd.to_datetime(data_convert[col], errors="coerce")
+
+        data_convert["updated"] = data_convert[columns_to_convert].max(axis=1)
+        data_convert["updated"] = data_convert["updated"].dt.strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
+
+        data_old = data_old.merge(
+            data_convert[["code", "updated"]], on="code", how="left"
+        )
+        print(data_old)  # replace with display function
+
+        # Save operations
+        SAVE_FILE(data_old, monitor_dir, file_name)
+        # SAVE_FILE(data_old, "S:/SHINY/REPORT/PC_FUNCTIONS/", file_name)
+
+        # Export to text and fst (if fst package available in Python)
+        data_old.to_csv(
+            os.path.join(monitor_dir, file_name.replace(".pkl", ".txt")),
+            sep="\t",
+            index=False,
+        )
+
+    elif p_action == "COMPARE":
+        my_pc = GET_PC_NAME()
+
+        if os.path.exists(os.path.join(monitor_dir, file_name)):
+            data_old = READ_FILE(monitor_dir, file_name)
+            data_old = data_old[data_old["date"] == pd.Timestamp("today").normalize()]
+        else:
+            data_old = pd.DataFrame()
+
+        data_one = (
+            data_old[data_old["code"] == p_option]
+            if not data_old.empty
+            else pd.DataFrame()
+        )
+
+        if not data_one.empty:
+            past_time = (
+                pd.to_datetime(data_one["updated"].iloc[0])
+                if not pd.isna(data_one["updated"].iloc[0])
+                else datetime.now()
+            )
+            diff_time = (datetime.now() - past_time).total_seconds()
+            print(f"{p_option} : {round(diff_time, 3)}")
+            p_result = diff_time > nb_seconds
+
+    if to_print:
+        print(p_result)
+    return p_result
+
+
+def GET_PC_NAME():
+    return os.getenv("COMPUTERNAME").upper()
+
+
+def READ_FILE(monitor_dir, file_name):
+    # Placeholder function for reading RDS file
+    try:
+        return pd.read_pickle(os.path.join(monitor_dir, file_name))
+    except Exception as e:
+        print(f"Error reading RDS file: {e}")
+        return pd.DataFrame()
+
+
+def SAVE_FILE(data, directory, file_name):
+    # Placeholder function for saving RDS file
+    data.to_pickle(os.path.join(directory, file_name))
+
+
+def LAST_TRADING_DAY():
+    # Mock function to get last trading day, replace with actual logic
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+def DOWNLOAD_VND_INDEX_PRICES_BY_CODE(p_codesource="VNINDEX", code_int="INDVNINDEX"):
+    data_list = []
+    to_continue = True
+    k = 1
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0",
+        "Accept-Language": "en-US,en;q=0.9,vi;q=0.8",
+    }
+
+    while to_continue:
+        # Construct the URL
+        url = f"https://finfo-api.vndirect.com.vn/v4/vnmarket_prices?sort=date&q=code:{p_codesource}~date:gte:2000-07-29~date:lte:{date.today()}&size=100&page={k}"
+
+        try:
+            # Make the request and parse JSON
+            response = requests.get(url, headers=headers)
+            x = response.json()
+
+            # Check if data is available
+            if "data" in x and len(x["data"]) > 0:
+                # Convert data to DataFrame
+                df = pd.DataFrame(x["data"])
+                df.columns
+                # Clean and rename columns
+                df = df.rename(columns=lambda col: col.strip().lower())
+
+                # Select and transform columns as per requirements
+                df = pd.DataFrame(
+                    {
+                        "source": "VND",
+                        "codesource": p_codesource.upper(),
+                        "ticker": p_codesource.upper(),
+                        "date": pd.to_datetime(df["date"]).dt.date,
+                        "open": pd.to_numeric(df["open"], errors="coerce"),
+                        "high": pd.to_numeric(df["high"], errors="coerce"),
+                        "low": pd.to_numeric(df["low"], errors="coerce"),
+                        "close": pd.to_numeric(df["close"], errors="coerce"),
+                        "change": pd.to_numeric(df["change"], errors="coerce"),
+                        "rt": pd.to_numeric(df["pctchange"], errors="coerce"),
+                        "volume": pd.to_numeric(df["accumulatedvol"], errors="coerce"),
+                        "turnover": pd.to_numeric(
+                            df["accumulatedval"], errors="coerce"
+                        ),
+                    }
+                )
+
+                data_list.append(df)
+                k += 1  # Move to the next page
+            else:
+                to_continue = False  # Stop if there's no more data
+
+        except Exception as e:
+            print(f"Error retrieving or processing data: {e}")
+            to_continue = False  # Stop in case of error
+
+    # Combine all pages into a single DataFrame
+    if data_list:
+        data_all = pd.concat(data_list, ignore_index=True)
+        data_all = data_all.sort_values(by="date").reset_index(drop=True)
+
+        # Calculate additional columns
+        data_all["reference"] = data_all["close"] - data_all["change"]
+        data_all["rt"] = data_all["change"] / data_all["reference"]
+        data_all["code"] = code_int.upper()
+
+        SHOW_DATA(data_all)
+        return data_all
+    else:
+        return pd.DataFrame()  # Return empty DataFrame if no data
 
 
 def EPOCH_TO_DATE(x_epoch=1651671000, convert_to="CHARACTER"):
