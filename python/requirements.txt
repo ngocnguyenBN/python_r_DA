@@ -25,3 +25,4 @@ autopep8
 black
 pylint
 flake8
+openpyxl

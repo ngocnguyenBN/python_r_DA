@@ -67,3 +67,45 @@ def trainee_download_yah_shares(pCode="IBM"):
     print(final_data)
 
     return final_data
+
+
+import pandas as pd
+
+
+file_path = "D:/OneDrive/WCEO_RESEARCH.xlsx"
+data = pd.read_excel(file_path, sheet_name="DETAIL", engine="openpyxl")
+
+data["ticker"] = data["ticker"].str.strip()
+data["country"] = data["country"].str.strip()
+
+data["ticker"] = data["ticker"].fillna("")  # Thay thế NaN bằng chuỗi rỗng
+data["ticker"] = data["ticker"].astype(str)
+
+data["ticker"] = data["ticker"].apply(lambda x: "".join(e for e in x if e.isalnum()))
+
+# codes_list = data["ticker"].tolist()
+# prices = {}
+# for code in codes_list:
+#     prices[code] = DOWNLOAD_YAH_PRICES_BY_CODE(symbol=code, period="max")
+
+
+# Xác nhận cột 'ticker' và 'country' tồn tại
+if "ticker" in data.columns and "country" in data.columns:
+    # Nhóm các ticker theo country
+    grouped_data = data.groupby("country")
+
+    # Duyệt qua từng nhóm (từng country)
+    for country, group in grouped_data:
+        prices = {}
+
+        for ticker in group["ticker"]:
+            # Gọi hàm tải dữ liệu
+            prices[ticker] = DOWNLOAD_YAH_PRICES_BY_CODE(symbol=ticker, period="max")
+
+        # Tạo DataFrame từ dictionary và lưu file
+        country_prices_df = pd.DataFrame(prices)
+        save_path = f"{country}_prices.xlsx"
+        country_prices_df.to_excel(save_path, index=False)
+        print(f"Đã lưu dữ liệu cho {country} vào tệp {save_path}")
+else:
+    print("File Excel không chứa cột 'ticker' và 'country'. Vui lòng kiểm tra lại.")

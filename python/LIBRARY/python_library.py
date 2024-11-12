@@ -382,7 +382,7 @@ def DOWNLOAD_CAF_PRICES_BY_CODE(p_codesource="vnindex", code_int="INDVNINDEX"):
 # x = DOWNLOAD_CAF_PRICES_BY_CODE(p_codesource="VNM", code_int="")
 
 
-def DOWNLOAD_YAH_PRICES_BY_CODE(symbol, period="max"):
+def DOWNLOAD_YAH_PRICES_BY_CODE(symbol="IBM", period="max"):
     """
     Downloads and merges price, dividend, and shares data for a given symbol.
 
@@ -464,7 +464,8 @@ def DOWNLOAD_YAH_PRICES_BY_CODE(symbol, period="max"):
 
 
 # Usage example
-# symbol_data = DOWNLOAD_YAH_PRICES_BY_CODE("IBM", period="max")
+# ticker = 'IBM'
+# symbol_data = DOWNLOAD_YAH_PRICES_BY_CODE(symbol = ticker, period="max")
 # symbol_data = DOWNLOAD_YAH_PRICES_BY_CODE("META", period="max")
 def CACULATE_CAPI(df):
     df = df.drop_duplicates(subset=["codesource", "date"])
