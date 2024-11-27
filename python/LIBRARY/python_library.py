@@ -304,13 +304,18 @@ def DOWNLOAD_CAF_PRICES_BY_CODE(p_codesource="vnindex", code_int="INDVNINDEX"):
     to_continue = True
     k = 1
 
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0",
+        "Accept-Language": "en-US,en;q=0.9,vi;q=0.8",
+    }
+
     while to_continue:
         # Construct the URL
         url = f"https://s.cafef.vn/Ajax/PageNew/DataHistory/PriceHistory.ashx?Symbol={p_codesource}&StartDate=&EndDate=&PageIndex={k}&PageSize=100"
 
         try:
             # Make the request and parse JSON
-            response = requests.get(url)
+            response = requests.get(url, headers=headers)
             x = response.json()
 
             # Check if data is available

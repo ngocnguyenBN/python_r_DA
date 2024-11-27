@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup
 import yfinance as yf
 import pandas as pd
 
+from python.LIBRARY.python_library import DOWNLOAD_YAH_PRICES_BY_CODE
+
 
 def trainee_download_yah_shares(pCode="IBM"):
     # Initialize final data
@@ -106,6 +108,4 @@ if "ticker" in data.columns and "country" in data.columns:
         country_prices_df = pd.DataFrame(prices)
         save_path = f"{country}_prices.xlsx"
         country_prices_df.to_excel(save_path, index=False)
-        print(f"Đã lưu dữ liệu cho {country} vào tệp {save_path}")
-else:
-    print("File Excel không chứa cột 'ticker' và 'country'. Vui lòng kiểm tra lại.")
+        # print(f"Đã lưu dữ liệu cho {country} vào tệp {save_path}")
