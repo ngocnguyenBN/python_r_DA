@@ -26,3 +26,5 @@ black
 pylint
 flake8
 openpyxl
+scrapy
+schedule

@@ -1,4 +1,4 @@
-# Scrapy settings for scrapyproject project
+# Scrapy settings for rugstore project
 #
 # For simplicity, this file contains only settings considered important or
 # commonly used. You can find more settings consulting the documentation:
@@ -7,14 +7,14 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = "scrapyproject"
+BOT_NAME = "rugstore"
 
-SPIDER_MODULES = ["scrapyproject.spiders"]
-NEWSPIDER_MODULE = "scrapyproject.spiders"
+SPIDER_MODULES = ["rugstore.spiders"]
+NEWSPIDER_MODULE = "rugstore.spiders"
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = "scrapyproject (+http://www.yourdomain.com)"
+#USER_AGENT = "rugstore (+http://www.yourdomain.com)"
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
@@ -45,13 +45,13 @@ ROBOTSTXT_OBEY = True
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 #SPIDER_MIDDLEWARES = {
-#    "scrapyproject.middlewares.ScrapyprojectSpiderMiddleware": 543,
+#    "rugstore.middlewares.RugstoreSpiderMiddleware": 543,
 #}
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #DOWNLOADER_MIDDLEWARES = {
-#    "scrapyproject.middlewares.ScrapyprojectDownloaderMiddleware": 543,
+#    "rugstore.middlewares.RugstoreDownloaderMiddleware": 543,
 #}
 
 # Enable or disable extensions
@@ -63,7 +63,7 @@ ROBOTSTXT_OBEY = True
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 #ITEM_PIPELINES = {
-#    "scrapyproject.pipelines.ScrapyprojectPipeline": 300,
+#    "rugstore.pipelines.RugstorePipeline": 300,
 #}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -88,6 +88,5 @@ ROBOTSTXT_OBEY = True
 #HTTPCACHE_STORAGE = "scrapy.extensions.httpcache.FilesystemCacheStorage"
 
 # Set settings whose default value is deprecated to a future-proof value
-REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"

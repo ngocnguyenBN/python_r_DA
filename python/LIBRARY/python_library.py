@@ -14,8 +14,8 @@ def CHECK_SAVE_LOCK(
     p_option="MAINTENANCE_STKVN > REF", p_action="SAVE", nb_seconds=3600, to_print=False
 ):
     p_result = True
-    monitor_dir = "D:/"
-    file_name = "TRAINEE_MONITOR_EXECUTION_SUMMARY.pkl"  # Converted from RDS to PKL
+    monitor_dir = "D:/python_r_DA/monitor/"
+    file_name = "MANAGE_MONITOR_EXECUTION_SUMMARY.pkl"  # Converted from RDS to PKL
 
     if p_action == "SAVE":
         my_pc = GET_PC_NAME()
@@ -270,10 +270,10 @@ def DOWNLOAD_ENT_PRICES_BY_CODE(
     if len(data) > 1:
         df = pd.DataFrame(data)
         df["timestamp_vn"] = pd.to_datetime(df["t"], unit="s") + timedelta(hours=7)
-        df["open"] = df["o"]
-        df["high"] = df["h"]
-        df["low"] = df["l"]
-        df["close"] = df["c"]
+        df["open"] = df["o"] * 1000
+        df["high"] = df["h"] * 1000
+        df["low"] = df["l"] * 1000
+        df["close"] = df["c"] * 1000
         df["volume"] = df["v"]
 
         # Additional calculations
