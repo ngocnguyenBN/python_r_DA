@@ -19,7 +19,7 @@ import sys
 from pathlib import Path
 
 sys.path.append("D:/python_r_DA/python/LIBRARY")
-from python_library import *
+from python_library import *  # type: ignore
 
 
 if __name__ == "__main__":
