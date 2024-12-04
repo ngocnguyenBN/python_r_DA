@@ -17,7 +17,8 @@ from functools import reduce
 
 import sys
 from pathlib import Path
-
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 sys.path.append("D:/python_r_DA/python/LIBRARY")
 from python_library import *  # type: ignore
 

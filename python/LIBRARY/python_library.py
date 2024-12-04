@@ -15,6 +15,8 @@ from datetime import datetime, timedelta, date
 from pathlib import Path
 from functools import reduce
 
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 def CHECK_SAVE_LOCK(
     p_option="MAINTENANCE_STKVN > REF", p_action="SAVE", nb_seconds=3600, to_print=False
