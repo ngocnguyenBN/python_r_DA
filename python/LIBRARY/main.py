@@ -25,4 +25,4 @@ if __name__ == "__main__":
 
         codes_list = [line.strip() for line in file]
 
-    dataa = DOWNLOAD_IMBALANCE_DATA_BY_LIST(list_codes=codes_list, do_history=False)
+    dataa = download_imbalance_data_by_list(list_codes=codes_list, do_history=False)

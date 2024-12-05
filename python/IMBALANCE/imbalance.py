@@ -18,6 +18,7 @@ from functools import reduce
 import sys
 from pathlib import Path
 import warnings
+
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 sys.path.append("D:/python_r_DA/python/LIBRARY")
 from python_library import *  # type: ignore
@@ -32,10 +33,10 @@ if __name__ == "__main__":
 
         codes_list = [line.strip() for line in file]
 
-    dt_download = DOWNLOAD_IMBALANCE_DATA_BY_LIST(
+    dt_download = download_imbalance_data_by_list(
         list_codes=codes_list, do_history=False
     )
 
-    dt_caculate = CACULATE_IMBALANCE_INDEX(
+    dt_caculate = caculate_imbalance_index(
         ToHistory=False, ratio_accept=0.001, ToSave=True
     )

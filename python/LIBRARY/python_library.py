@@ -16,9 +16,14 @@ from pathlib import Path
 from functools import reduce
 
 import warnings
+
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-def CHECK_SAVE_LOCK(
+# parameter, function name: lower case
+# variable: Upper case
+
+
+def check_save_lock(
     p_option="MAINTENANCE_STKVN > REF", p_action="SAVE", nb_seconds=3600, to_print=False
 ):
     p_result = True
@@ -26,10 +31,10 @@ def CHECK_SAVE_LOCK(
     file_name = "MANAGE_MONITOR_EXECUTION_SUMMARY.pkl"  # Converted from RDS to PKL
 
     if p_action == "SAVE":
-        my_pc = GET_PC_NAME()
+        my_pc = get_pc_name()
 
         if os.path.exists(os.path.join(monitor_dir, file_name)):
-            data_old = READ_FILE(monitor_dir, file_name)
+            data_old = read_file(monitor_dir, file_name)
 
             if data_old["date"].max() == pd.Timestamp("today").normalize():
                 list_option = data_old["code"].unique()
@@ -94,8 +99,8 @@ def CHECK_SAVE_LOCK(
         print(data_old)  # replace with display function
 
         # Save operations
-        SAVE_FILE(data_old, monitor_dir, file_name)
-        # SAVE_FILE(data_old, "S:/SHINY/REPORT/PC_FUNCTIONS/", file_name)
+        save_file(data_old, monitor_dir, file_name)
+        # save_file(data_old, "S:/SHINY/REPORT/PC_FUNCTIONS/", file_name)
 
         # Export to text and fst (if fst package available in Python)
         data_old.to_csv(
@@ -105,10 +110,10 @@ def CHECK_SAVE_LOCK(
         )
 
     elif p_action == "COMPARE":
-        my_pc = GET_PC_NAME()
+        my_pc = get_pc_name()
 
         if os.path.exists(os.path.join(monitor_dir, file_name)):
-            data_old = READ_FILE(monitor_dir, file_name)
+            data_old = read_file(monitor_dir, file_name)
             data_old = data_old[data_old["date"] == pd.Timestamp("today").normalize()]
         else:
             data_old = pd.DataFrame()
@@ -134,11 +139,11 @@ def CHECK_SAVE_LOCK(
     return p_result
 
 
-def GET_PC_NAME():
+def get_pc_name():
     return os.getenv("COMPUTERNAME").upper()
 
 
-def READ_FILE(monitor_dir, file_name):
+def read_file(monitor_dir, file_name):
     # Placeholder function for reading RDS file
     try:
         return pd.read_pickle(os.path.join(monitor_dir, file_name))
@@ -147,17 +152,17 @@ def READ_FILE(monitor_dir, file_name):
         return pd.DataFrame()
 
 
-def SAVE_FILE(data, directory, file_name):
+def save_file(data, directory, file_name):
     # Placeholder function for saving RDS file
     data.to_pickle(os.path.join(directory, file_name))
 
 
-def LAST_TRADING_DAY():
+def last_trading_day():
     # Mock function to get last trading day, replace with actual logic
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
-def DOWNLOAD_VND_INDEX_PRICES_BY_CODE(p_codesource="VNINDEX", code_int="INDVNINDEX"):
+def download_vnd_index_prices_by_code(p_codesource="VNINDEX", code_int="INDVNINDEX"):
     data_list = []
     to_continue = True
     k = 1
@@ -244,7 +249,7 @@ def EPOCH_TO_DATE(x_epoch=1651671000, convert_to="CHARACTER"):
     return x_res
 
 
-def DOWNLOAD_ENT_PRICES_BY_CODE(
+def download_ent_prices_by_code(
     type="index",
     codesource="VN30",
     code="INDVN30",
@@ -753,7 +758,7 @@ def DOWNLOAD_CAF_ORDER_BY_CODE(
         return pd.DataFrame()  # Return empty DataFrame if no data
 
 
-def DOWNLOAD_ENT_PRICES_BY_CODE(
+def download_ent_prices_by_code(
     type="index",
     codesource="VN30",
     code="INDVN30",
@@ -816,7 +821,7 @@ def DOWNLOAD_ENT_PRICES_BY_CODE(
         return pd.DataFrame()
 
 
-def DOWNLOAD_IMBALANCE_DATA_BY_LIST(list_codes=None, do_history=False):
+def download_imbalance_data_by_list(list_codes=None, do_history=False):
     """
     Downloads and processes imbalance data for a list of stock codes.
 
@@ -888,7 +893,7 @@ def DOWNLOAD_IMBALANCE_DATA_BY_LIST(list_codes=None, do_history=False):
                                         imbalance_data["date"]
                                     )
                                 # Fetch price data
-                                # price_data = DOWNLOAD_ENT_PRICES_BY_CODE(
+                                # price_data = download_ent_prices_by_code(
                                 #     type="stock",
                                 #     codesource=code,
                                 #     code=f"STKVN{code}",
@@ -974,7 +979,7 @@ def DOWNLOAD_IMBALANCE_DATA_BY_LIST(list_codes=None, do_history=False):
                 finally:
                     lock_file.unlink()
 
-        ToMergeHistory = CHECK_SAVE_LOCK(
+        ToMergeHistory = check_save_lock(
             p_option="MERGE_DATA_IMBALANCE_HISTORY",
             p_action="COMPARE",
             nb_seconds=3600,
@@ -1000,7 +1005,7 @@ def DOWNLOAD_IMBALANCE_DATA_BY_LIST(list_codes=None, do_history=False):
             history.to_pickle(
                 "D:/python_r_DA/data/dbl_download_data_imbalance_history.pkl"
             )
-            CHECK_SAVE_LOCK(
+            check_save_lock(
                 p_option="MERGE_DATA_IMBALANCE_HISTORY",
                 p_action="SAVE",
                 nb_seconds=3600,
@@ -1020,10 +1025,10 @@ def DOWNLOAD_IMBALANCE_DATA_BY_LIST(list_codes=None, do_history=False):
 #     # Read the rest of the lines and strip any leading/trailing whitespace
 #     codes_list = [line.strip() for line in file]
 
-# dataa = DOWNLOAD_IMBALANCE_DATA_BY_LIST(list_codes=codes_list, do_history=True)
+# dataa = download_imbalance_data_by_list(list_codes=codes_list, do_history=True)
 
 
-def CACULATE_IMBALANCE_INDEX(ToHistory=False, ratio_accept=0.001, ToSave=True):
+def caculate_imbalance_index(ToHistory=False, ratio_accept=0.001, ToSave=True):
     if ToHistory:
         old_data = pd.read_pickle(
             "D:/python_r_DA/data/dbl_download_data_imbalance_history.pkl"
@@ -1149,7 +1154,7 @@ def CACULATE_IMBALANCE_INDEX(ToHistory=False, ratio_accept=0.001, ToSave=True):
 
         final_data.to_pickle("D:/python_r_DA/data/dbl_index_imbalance_day.pkl")
 
-        ToMergeHistory = CHECK_SAVE_LOCK(
+        ToMergeHistory = check_save_lock(
             p_option="MERGE_INDEX_IMBALANCE_HISTORY",
             p_action="COMPARE",
             nb_seconds=3600,
@@ -1170,7 +1175,7 @@ def CACULATE_IMBALANCE_INDEX(ToHistory=False, ratio_accept=0.001, ToSave=True):
                 [final_data, history], ignore_index=True
             ).drop_duplicates(subset=["code", "date"])
             history.to_pickle("D:/python_r_DA/data/dbl_index_imbalance_history.pkl")
-            CHECK_SAVE_LOCK(
+            check_save_lock(
                 p_option="MERGE_INDEX_IMBALANCE_HISTORY",
                 p_action="SAVE",
                 nb_seconds=3600,
