@@ -28,3 +28,8 @@ flake8
 openpyxl
 scrapy
 schedule
+pyspark
+py4j
+cloudpickle
+etfdb
+MetaTrader5

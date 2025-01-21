@@ -1,7 +1,7 @@
 import yfinance as yf
 import pandas as pd
 
-file_path = "D:/list_Code_USA.txt"
+file_path = "S:/LIST/ETF.txt"
 with open(file_path, "r") as file:
     # Skip the first line (column name)
     next(file)
